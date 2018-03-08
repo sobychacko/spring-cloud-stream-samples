@@ -1,0 +1,162 @@
+package kafka.streams.word.count;
+
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
+import org.apache.kafka.common.serialization.Serdes;
+import org.apache.kafka.streams.KeyValue;
+import org.apache.kafka.streams.kstream.KStream;
+import org.apache.kafka.streams.kstream.Materialized;
+import org.apache.kafka.streams.kstream.Serialized;
+import org.apache.kafka.streams.kstream.TimeWindows;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.stream.annotation.EnableBinding;
+import org.springframework.cloud.stream.annotation.Input;
+import org.springframework.cloud.stream.annotation.Output;
+import org.springframework.cloud.stream.annotation.StreamListener;
+import org.springframework.cloud.stream.binder.kafka.streams.annotations.KafkaStreamsProcessor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.integration.annotation.InboundChannelAdapter;
+import org.springframework.integration.annotation.Poller;
+import org.springframework.integration.core.MessageSource;
+import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.SubscribableChannel;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.support.GenericMessage;
+
+import java.util.Arrays;
+import java.util.Date;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+@SpringBootApplication
+public class KafkaStreamsWordCountApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(KafkaStreamsWordCountApplication.class, args);
+	}
+
+	@EnableBinding(KafkaStreamsProcessor.class)
+	public static class WordCountProcessorApplication {
+
+		@Autowired
+		private TimeWindows timeWindows;
+
+		@StreamListener("input")
+		@SendTo("output")
+		public KStream<?, WordCount> process(KStream<Object, String> input) {
+
+			return input
+					.flatMapValues(value -> Arrays.asList(value.toLowerCase().split("\\W+")))
+					.map((key, value) -> new KeyValue<>(value, value))
+					.groupByKey(Serialized.with(Serdes.String(), Serdes.String()))
+					.windowedBy(timeWindows)
+					.count(Materialized.as("WordCounts-1"))
+					.toStream()
+					.map((key, value) -> new KeyValue<>(null, new WordCount(key.key(), value, new Date(key.window().start()), new Date(key.window().end()))));
+		}
+	}
+
+	static class WordCount {
+
+		private String word;
+
+		private long count;
+
+		private Date start;
+
+		private Date end;
+
+		WordCount(String word, long count, Date start, Date end) {
+			this.word = word;
+			this.count = count;
+			this.start = start;
+			this.end = end;
+		}
+
+		public String getWord() {
+			return word;
+		}
+
+		public void setWord(String word) {
+			this.word = word;
+		}
+
+		public long getCount() {
+			return count;
+		}
+
+		public void setCount(long count) {
+			this.count = count;
+		}
+
+		public Date getStart() {
+			return start;
+		}
+
+		public void setStart(Date start) {
+			this.start = start;
+		}
+
+		public Date getEnd() {
+			return end;
+		}
+
+		public void setEnd(Date end) {
+			this.end = end;
+		}
+	}
+
+	//Following code is only used as a test harness.
+
+	//Following source is used as test producer.
+	@EnableBinding(TestSource.class)
+	static class TestProducer {
+
+		private AtomicBoolean semaphore = new AtomicBoolean(true);
+
+		private String[] randomWords = new String[]{"foo", "bar", "foobar", "baz", "fox"};
+		private Random random = new Random();
+
+		@Bean
+		@InboundChannelAdapter(channel = TestSource.OUTPUT, poller = @Poller(fixedDelay = "1000"))
+		public MessageSource<String> sendTestData() {
+			return () -> {
+				int idx = random.nextInt(5);
+				return new GenericMessage<>(randomWords[idx]);
+			};
+		}
+	}
+
+	//Following sink is used as test consumer for the above processor. It logs the data received through the processor.
+	@EnableBinding(TestSink.class)
+	static class TestConsumer {
+
+		private final Log logger = LogFactory.getLog(getClass());
+
+		@StreamListener(TestSink.INPUT)
+		public void receive(String data) {
+			logger.info("Data received..." + data);
+		}
+	}
+
+	interface TestSink {
+
+		String INPUT = "input1";
+
+		@Input(INPUT)
+		SubscribableChannel input1();
+
+	}
+
+	interface TestSource {
+
+		String OUTPUT = "output1";
+
+		@Output(TestSource.OUTPUT)
+		MessageChannel output();
+
+	}
+
+}
