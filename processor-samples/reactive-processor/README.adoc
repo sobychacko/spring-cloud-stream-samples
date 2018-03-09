@@ -24,7 +24,7 @@ The main application contains the reactive processor that receives textual data 
 It then sends the aggregated data through the outbound destination of the processor.
 
 The application also provides a source and sink for testing.
-Test source will generate some text every second and the test sink will verify that the processor has converted the text into its uppercase.
+Test source will generate some text every second and the test sink will verify that the processor has accumulated the text over a duration.
 Test source is bound to the same broker destination where the processor is listening from.
 Similarly test sink is bound to the same broker destination where the processor is producing to.
 

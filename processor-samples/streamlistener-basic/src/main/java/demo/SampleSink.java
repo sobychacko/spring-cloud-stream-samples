@@ -16,6 +16,8 @@
 
 package demo;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.Input;
 import org.springframework.cloud.stream.annotation.StreamListener;
@@ -27,13 +29,13 @@ import org.springframework.messaging.SubscribableChannel;
 @EnableBinding(SampleSink.Sink.class)
 public class SampleSink {
 
+	private final Log logger = LogFactory.getLog(getClass());
+
 	// Sink application definition
 	@StreamListener(Sink.SAMPLE)
 	public void receive(Foo foo) {
-		System.out.println("******************");
-		System.out.println("At the Sink");
-		System.out.println("******************");
-		System.out.println("Received transformed message " + foo.getValue() + " of type " + foo.getClass());
+		logger.info("******************\nAt the Sink\n******************");
+		logger.info("Received transformed message " + foo.getValue() + " of type " + foo.getClass());
 	}
 
 	public interface Sink {

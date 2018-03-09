@@ -58,7 +58,7 @@ public class SampleAcceptanceTests {
 		}
 	}
 
-	private void waitFoExpectedMessagesToAppearInTheLogs(String app, String... textToSearch) {
+	private void waitForExpectedMessagesToAppearInTheLogs(String app, String... textToSearch) {
 		boolean foundAssertionStrings = waitForLogEntry(app, textToSearch);
 		if (!foundAssertionStrings) {
 			fail("Did not find the text looking for after waiting for 30 seconds");
@@ -79,7 +79,7 @@ public class SampleAcceptanceTests {
 				"--management.endpoints.web.exposure.include=*"
 		});
 		waitForAppToStartFully("JDBC Source", "Started SampleJdbcSource in");
-		waitFoExpectedMessagesToAppearInTheLogs("JDBC Source",
+		waitForExpectedMessagesToAppearInTheLogs("JDBC Source",
 				"Data received...[{id=1, name=Bob, tag=null}, {id=2, name=Jane, tag=null}, {id=3, name=John, tag=null}]");
 	}
 
@@ -90,7 +90,7 @@ public class SampleAcceptanceTests {
 				"--management.endpoints.web.exposure.include=*"
 		});
 		waitForAppToStartFully("JDBC Source", "Started SampleJdbcSource in");
-		waitFoExpectedMessagesToAppearInTheLogs("JDBC Source",
+		waitForExpectedMessagesToAppearInTheLogs("JDBC Source",
 				"Data received...[{id=1, name=Bob, tag=null}, {id=2, name=Jane, tag=null}, {id=3, name=John, tag=null}]");
 	}
 
@@ -172,14 +172,14 @@ public class SampleAcceptanceTests {
 				"http://localhost:8080",
 				"{\"id\":\"customerId-1\",\"bill-pay\":\"100\"}", String.class);
 
-		waitFoExpectedMessagesToAppearInTheLogs("Dynamic Source",
+		waitForExpectedMessagesToAppearInTheLogs("Dynamic Source",
 				"Data received from customer-1...{\"id\":\"customerId-1\",\"bill-pay\":\"100\"}");
 
 		restTemplate.postForObject(
 				"http://localhost:8080",
 				"{\"id\":\"customerId-2\",\"bill-pay2\":\"200\"}", String.class);
 
-		waitFoExpectedMessagesToAppearInTheLogs("Dynamic Source",
+		waitForExpectedMessagesToAppearInTheLogs("Dynamic Source",
 				"Data received from customer-2...{\"id\":\"customerId-2\",\"bill-pay2\":\"200\"}");
 	}
 
@@ -190,7 +190,7 @@ public class SampleAcceptanceTests {
 
 		waitForAppToStartFully("Multibinder", "Started MultibinderApplication in");
 
-		waitFoExpectedMessagesToAppearInTheLogs("Multibinder", "Data received...bar", "Data received...foo");
+		waitForExpectedMessagesToAppearInTheLogs("Multibinder", "Data received...bar", "Data received...foo");
 	}
 
 	@Test
@@ -203,7 +203,85 @@ public class SampleAcceptanceTests {
 
 		waitForAppToStartFully("Multibinder 2 Kafka Clusters", "Started MultibinderApplication in");
 
-		waitFoExpectedMessagesToAppearInTheLogs("Multibinder 2 Kafka Clusters", "Data received...bar", "Data received...foo");
+		waitForExpectedMessagesToAppearInTheLogs("Multibinder 2 Kafka Clusters", "Data received...bar", "Data received...foo");
+	}
+
+	@Test
+	public void testStreamListenerBasicSampleKafka() throws Exception {
+		process = startTheApp(new String[]{
+				"java", "-jar", "/tmp/streamlistener-basic-kafka-sample.jar", "--logging.file=/tmp/foobar.log",
+				"--management.endpoints.web.exposure.include=*"
+		});
+		waitForAppToStartFully("Streamlistener basic", "Started TypeConversionApplication in");
+		waitForExpectedMessagesToAppearInTheLogs("Streamlistener basic",
+				"At the Source", "Sending value: {\"value\":\"hi\"}", "At the transformer",
+				"Received value hi of type class demo.Bar",
+				"Transforming the value to HI and with the type class demo.Bar",
+				"At the Sink",
+				"Received transformed message HI of type class demo.Foo");
+	}
+
+	@Test
+	public void testStreamListenerBasicSampleRabbit() throws Exception {
+		process = startTheApp(new String[]{
+				"java", "-jar", "/tmp/streamlistener-basic-rabbit-sample.jar", "--logging.file=/tmp/foobar.log",
+				"--management.endpoints.web.exposure.include=*"
+		});
+		waitForAppToStartFully("Streamlistener basic", "Started TypeConversionApplication in");
+		waitForExpectedMessagesToAppearInTheLogs("Streamlistener basic",
+				"At the Source", "Sending value: {\"value\":\"hi\"}", "At the transformer",
+				"Received value hi of type class demo.Bar",
+				"Transforming the value to HI and with the type class demo.Bar",
+				"At the Sink",
+				"Received transformed message HI of type class demo.Foo");
+	}
+
+	@Test
+	public void testReactiveProcessorSampleKafka() throws Exception {
+		process = startTheApp(new String[]{
+				"java", "-jar", "/tmp/reactive-processor-kafka-sample.jar", "--logging.file=/tmp/foobar.log",
+				"--management.endpoints.web.exposure.include=*"
+		});
+		waitForAppToStartFully("Reactive processor", "Started ReactiveProcessorApplication in");
+		waitForExpectedMessagesToAppearInTheLogs("Reactive processor",
+				"Data received: foobarfoobarfoo",
+				"Data received: barfoobarfoobar");
+	}
+
+	@Test
+	public void testReactiveProcessorSampleRabbit() throws Exception {
+		process = startTheApp(new String[]{
+				"java", "-jar", "/tmp/reactive-processor-rabbit-sample.jar", "--logging.file=/tmp/foobar.log",
+				"--management.endpoints.web.exposure.include=*"
+		});
+		waitForAppToStartFully("Reactive processor", "Started ReactiveProcessorApplication in");
+		waitForExpectedMessagesToAppearInTheLogs("Reactive processor",
+				"Data received: foobarfoobarfoo",
+				"Data received: barfoobarfoobar");
+	}
+
+	@Test
+	public void testSensorAverageReactiveSampleKafka() throws Exception {
+		process = startTheApp(new String[]{
+				"java", "-jar", "/tmp/sensor-average-reactive-kafka-sample.jar", "--logging.file=/tmp/foobar.log",
+				"--management.endpoints.web.exposure.include=*"
+		});
+		waitForAppToStartFully("Sensor average", "Started SensorAverageProcessorApplication in");
+		waitForExpectedMessagesToAppearInTheLogs("Sensor average",
+				"Data received: {\"id\":100100,\"average\":",
+				"Data received: {\"id\":100200,\"average\":", "Data received: {\"id\":100300,\"average\":9");
+	}
+
+	@Test
+	public void testSensorAverageReactiveSampleRabbit() throws Exception {
+		process = startTheApp(new String[]{
+				"java", "-jar", "/tmp/sensor-average-reactive-rabbit-sample.jar", "--logging.file=/tmp/foobar.log",
+				"--management.endpoints.web.exposure.include=*"
+		});
+		waitForAppToStartFully("Sensor average", "Started SensorAverageProcessorApplication in");
+		waitForExpectedMessagesToAppearInTheLogs("Sensor average",
+				"Data received: {\"id\":100100,\"average\":",
+				"Data received: {\"id\":100200,\"average\":", "Data received: {\"id\":100300,\"average\":9");
 	}
 
 	@Test
@@ -214,7 +292,7 @@ public class SampleAcceptanceTests {
 
 		waitForAppToStartFully("Kafka Streams WordCount", "Started KafkaStreamsWordCountApplication in");
 
-		waitFoExpectedMessagesToAppearInTheLogs("Kafka Streams WordCount",
+		waitForExpectedMessagesToAppearInTheLogs("Kafka Streams WordCount",
 				"Data received...{\"word\":\"foo\",\"count\":1,",
 				"Data received...{\"word\":\"bar\",\"count\":1,",
 				"Data received...{\"word\":\"foobar\",\"count\":1,",

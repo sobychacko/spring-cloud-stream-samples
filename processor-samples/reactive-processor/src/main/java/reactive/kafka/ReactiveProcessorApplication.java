@@ -1,5 +1,7 @@
 package reactive.kafka;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.stream.annotation.EnableBinding;
@@ -21,10 +23,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 @SpringBootApplication
 @EnableBinding(Processor.class)
-public class ReactiveKafkaProcessorApplication {
+public class ReactiveProcessorApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(ReactiveKafkaProcessorApplication.class, args);
+		SpringApplication.run(ReactiveProcessorApplication.class, args);
 	}
 
 	@StreamListener
@@ -57,9 +59,11 @@ public class ReactiveKafkaProcessorApplication {
 	@EnableBinding(Sink.class)
 	static class TestSink {
 
+		private final Log logger = LogFactory.getLog(getClass());
+
 		@StreamListener("test-sink")
 		public void receive(String payload) {
-			System.out.println("Data received: " + payload);
+			logger.info("Data received: " + payload);
 		}
 	}
 

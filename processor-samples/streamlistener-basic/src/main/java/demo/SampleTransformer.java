@@ -16,6 +16,8 @@
 
 package demo;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.cloud.stream.messaging.Processor;
@@ -29,14 +31,14 @@ public class SampleTransformer {
 
 	private static final String TRANSFORMATION_VALUE = "HI";
 
+	private final Log logger = LogFactory.getLog(getClass());
+
 	@StreamListener(Processor.INPUT)
 	@SendTo(Processor.OUTPUT)
 	public Bar receive(Bar bar) {
-		System.out.println("******************");
-		System.out.println("At the transformer");
-		System.out.println("******************");
-		System.out.println("Received value "+ bar.getValue() + " of type " + bar.getClass());
-		System.out.println("Transforming the value to " + TRANSFORMATION_VALUE + " and with the type " + bar.getClass());
+		logger.info("******************\nAt the transformer\n******************");
+		logger.info("Received value "+ bar.getValue() + " of type " + bar.getClass());
+		logger.info("Transforming the value to " + TRANSFORMATION_VALUE + " and with the type " + bar.getClass());
 		bar.setValue(TRANSFORMATION_VALUE);
 		return bar;
 	}

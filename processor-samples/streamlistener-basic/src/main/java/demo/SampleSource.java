@@ -16,6 +16,8 @@
 
 package demo;
 
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.cloud.stream.annotation.EnableBinding;
 import org.springframework.cloud.stream.annotation.Output;
 import org.springframework.context.annotation.Bean;
@@ -32,16 +34,16 @@ import org.springframework.messaging.support.MessageBuilder;
 @EnableBinding(SampleSource.Source.class)
 public class SampleSource {
 
+	private final Log logger = LogFactory.getLog(getClass());
+
 	@Bean
 	@InboundChannelAdapter(value = Source.SAMPLE, poller = @Poller(fixedDelay = "1000", maxMessagesPerPoll = "1"))
 	public MessageSource<String> timerMessageSource() {
 		return new MessageSource<String>() {
 			public Message<String> receive() {
-				System.out.println("******************");
-				System.out.println("At the Source");
-				System.out.println("******************");
+				logger.info("******************\nAt the Source\n******************");
 				String value = "{\"value\":\"hi\"}";
-				System.out.println("Sending value: " + value);
+				logger.info("Sending value: " + value);
 				return MessageBuilder.withPayload(value).build();
 			}
 		};
