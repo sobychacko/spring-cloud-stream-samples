@@ -36,3 +36,17 @@ Data received: barfoobarfoobar
 Data received: foobarfoobarfoo
 Data received: foobarfoobarfoo
 ```
+
+* `docker-compose down`
+
+## Running the application using Rabbit binder
+
+All the instructions above apply here also, but instead of running the default `docker-compose.yml`, use the command below to start a Rabbitmq cluser.
+
+* `docker-compose -f docker-compose-rabbit.yml up -d`
+
+* `./mvnw clean package -P rabbit-binder`
+
+* `java -jar target/reactive-processor-0.0.1-SNAPSHOT.jar`
+
+Once you are done testing: `docker-compose -f docker-compose-rabbit.yml down`
