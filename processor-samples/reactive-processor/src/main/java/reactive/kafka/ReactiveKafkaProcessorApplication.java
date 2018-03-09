@@ -51,7 +51,6 @@ public class ReactiveKafkaProcessorApplication {
 		public MessageSource<String> sendTestData() {
 			return () ->
 					new GenericMessage<>(this.semaphore.getAndSet(!this.semaphore.get()) ? "foo" : "bar");
-
 		}
 	}
 
@@ -73,5 +72,4 @@ public class ReactiveKafkaProcessorApplication {
 		@Output("test-source")
 		MessageChannel sampleSource();
 	}
-
 }

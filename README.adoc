@@ -3,8 +3,9 @@
 This repository contains a collection of applications written using Spring Cloud Stream.
 All the applications are self contained.
 They can be run against either Kafka or RabbitMQ middleware technologies.
-For your convenience, docker images are provided as part of each applications wherever it is applicable.
-You can read the README that is part of each app and follow along the instructions for running these samples.
+For convenience, docker-compose.yml files are provided as part of each applications wherever it is applicable.
+These compose files bring up the middleware (kafka or Rabbit) and other necessary components for running each app.
+You can read the README that is part of each sample and follow along the instructions for running these.
 
 === Sample Applications
 

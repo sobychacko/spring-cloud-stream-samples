@@ -6,12 +6,11 @@ The application simply aggregates a string for a particular key.
 
 === Running the app:
 
-*Make the appropriate changes in application.yml if need be.
+Go to the root of the repository and do:
 
-`spring.cloud.stream.kstream.binder.brokers=<Broker IP Address>` +
-`spring.cloud.stream.kstream.binder.zkNodes=<Zookeeper IP Address>`
+`docker-compose up -d`
 
-Go to the root of the repository and do: `./mvnw clean package`
+`./mvnw clean package`
 
 `java -jar target/kafka-streams-aggregate-0.0.1-SNAPSHOT.jar`
 

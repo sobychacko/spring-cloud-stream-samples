@@ -2,16 +2,16 @@
 
 This example shows how to run a Spring Cloud Stream application with two different binder types (Kafka and RabbitMQ)
 
-
 ## Running the application
 
 The following instructions assume that you are running Kafka and RabbitMQ as a Docker images.
 
-* Go to the application root
+Go to the application root:
+
 * `docker-compose up -d`
 
 This brings up both Kafka and RabbitMQ clusters in docker containers.
-Local ports mapped for kafka are 9092 and 5672.
+Local ports mapped are 9092 and 5672 for Kafka and RabbitMQ respectively.
 
 * `./mvnw clean package`
 
@@ -19,7 +19,7 @@ The sample comes with a convenient test producer and consumer to see the process
 After running the program, watch your console, every second some data is sent to Kafka and it is received through RabbitMQ.
 
 ```
-javac-jar target/multibinder-0.0.1-SNAPSHOT.jar
+java -jar target/multibinder-0.0.1-SNAPSHOT.jar
 ```
 
 You can also send data directly to Kafka topic:
